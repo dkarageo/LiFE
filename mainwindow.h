@@ -20,7 +20,10 @@ public:
 public slots:
     void onSideBarClicked(const QModelIndex &index);
     void onMainExplorerDoubleClicked(const QModelIndex &index);
-    void onMainExplorerRowCountChanged(int rowCount);
+    void refreshStatusBarCounter();
+
+signals:
+    void mainExplorerRootIndexChanged(const QModelIndex &);
 
 private:
     Ui::MainWindow *ui;
@@ -28,8 +31,7 @@ private:
     QTableView *mainExplorer;
     QFileSystemModel *sideBarModel;
     QFileSystemModel *mainExplorerModel;
-    void setupMenubar();
-    void setupToolbar();
+    void setupMenubarAndToolbar();
     void setupStatusbar();
 };
 

@@ -1,33 +1,40 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
+// Creating and configuring essential UI Widgets.
     ui->centralWidget->setWindowTitle("LiFE");
 
     // Creating the main layout of the centralWidget.
     QHBoxLayout *layout = new QHBoxLayout(this);
+    ui->centralWidget->setLayout(layout);
 
     // Creating the two main views of the UI
     sideBar = new QTreeView(this);
+    sideBar->header()->hide();
+
     mainExplorer = new QTableView(this);
+    mainExplorer->verticalHeader()->hide();
 
     // Adding the two main views inside a splitter
     QSplitter *splitter = new QSplitter(this);
     splitter->addWidget(sideBar);
     splitter->addWidget(mainExplorer);
 
-    layout->addWidget(splitter);
+    layout->addWidget(splitter); // and add splitter to layout
 
     // Setting initial values for the initial splitting
     QList<int> splittedSizes;
     splittedSizes << 300 << 700;
     splitter->setSizes(splittedSizes);
 
+// Creating and configuring essential models.
     sideBarModel = new QFileSystemModel(this);
     mainExplorerModel = new QFileSystemModel(this);
 
@@ -35,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     sideBarModel->setReadOnly(false);
     mainExplorerModel->setReadOnly(false);
 
-    QString initialRootPath = "C:/";
+    QString initialRootPath = "/";
 
     // Creating data models for sideBar and mainExplorer
     sideBarModel->setRootPath(initialRootPath);
@@ -48,10 +55,13 @@ MainWindow::MainWindow(QWidget *parent) :
     sideBar->setModel(sideBarModel);
     mainExplorer->setModel(mainExplorerModel);
 
-    ui->centralWidget->setLayout(layout);
+// Reconfiguring widgets after attaching models to them.
+    sideBar->hideColumn(1);
+    sideBar->hideColumn(2);
+    sideBar->hideColumn(3);
 
-    setupMenubar();
-    setupToolbar();
+// Setting up additional UI elements
+    setupMenubarAndToolbar();
     setupStatusbar();
 
 // SIGNAL-SLOT connections go here
@@ -66,38 +76,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onSideBarClicked(const QModelIndex &index)
-{
-    // Getting path of folder whose contents mainExplorer should show.
-    QString path = sideBarModel->fileInfo(index).absoluteFilePath();
 
-    mainExplorer->setRootIndex(mainExplorerModel->setRootPath(path));
-}
+// ==== Implementations of private setup methods go here ====
 
-void MainWindow::onMainExplorerDoubleClicked(const QModelIndex &index)
-{
-    // Getting path of folder whose contents mainExplorer should show.
-    QString path = mainExplorerModel->fileInfo(index).absoluteFilePath();
-
-    mainExplorer->setRootIndex(mainExplorerModel->setRootPath(path));
-}
-
-void MainWindow::onMainExplorerRowCountChanged(int rowCount)
-{
-
-}
-
-void MainWindow::onCopyActionTriggered()
-{
-    QModelIndex cIndex = mainExplorer->currentIndex();
-    if(!cIndex.isValid()) return;
-
-    QString cPath = mainExplorerModel->fileInfo(cIndex);
-
-    QFile()
-}
-
-void MainWindow::setupMenubar()
+void MainWindow::setupMenubarAndToolbar()
 {
     QMenu *fileMenu = new QMenu("File", this);
     QMenu *editMenu = new QMenu("Edit", this);
@@ -139,12 +121,56 @@ void MainWindow::setupMenubar()
     ui->mainToolBar->addAction(deleteAction);
 }
 
-void MainWindow::setupToolbar()
-{
-
-}
-
 void MainWindow::setupStatusbar()
 {
-    ui->statusBar->showMessage(QString::number(mainExplorerModel->rowCount()) + " objects");
+    refreshStatusBarCounter();
+
+    // Connecting signals that mean permStatusBarCounter should be refreshed.
+    connect(this, SIGNAL(mainExplorerRootIndexChanged(QModelIndex)),
+            this, SLOT(refreshStatusBarCounter()));
 }
+
+
+// ==== Implementations of slots go here ====
+
+void MainWindow::onSideBarClicked(const QModelIndex &index)
+{
+    // Getting path of folder whose contents mainExplorer should show.
+    QString path = sideBarModel->fileInfo(index).absoluteFilePath();
+
+    mainExplorer->setRootIndex(mainExplorerModel->setRootPath(path));
+    emit mainExplorerRootIndexChanged(mainExplorer->rootIndex());
+}
+
+void MainWindow::onMainExplorerDoubleClicked(const QModelIndex &index)
+{
+    // Getting path of folder whose contents mainExplorer should show.
+    QString path = mainExplorerModel->fileInfo(index).absoluteFilePath();
+
+    mainExplorer->setRootIndex(mainExplorerModel->setRootPath(path));
+    emit mainExplorerRootIndexChanged(mainExplorer->rootIndex());
+
+    // Keep sideBar synchronized too.
+    QModelIndex sideBarIndex = sideBarModel->index(path);
+    sideBar->expand(sideBarIndex);
+    sideBar->scrollTo(sideBarIndex, QAbstractItemView::PositionAtTop);
+}
+
+void MainWindow::refreshStatusBarCounter()
+{
+    // Getting directory set as root directory in mainExplorerModel.
+    QDir cDir = mainExplorerModel->rootDirectory();
+    cDir.setFilter(QDir::NoDotAndDotDot | QDir::AllEntries);
+
+    ui->statusBar->showMessage(QString::number(cDir.count()) + " objects");
+}
+
+//void MainWindow::onCopyActionTriggered()
+//{
+////    QModelIndex cIndex = mainExplorer->currentIndex();
+////    if(!cIndex.isValid()) return;
+
+////    QString cPath = mainExplorerModel->fileInfo(cIndex);
+
+////    QFile()
+//}
