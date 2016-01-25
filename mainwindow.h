@@ -19,6 +19,7 @@ public:
 
 public slots:
     void onDeleteActionTriggered();
+    void onGoUpActionTriggered();
     void onMainExplorerDoubleClicked(const QModelIndex &index);
     void onSideBarClicked(const QModelIndex &index);
     void refreshStatusBarCounter();
