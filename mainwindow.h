@@ -18,8 +18,9 @@ public:
     ~MainWindow();
 
 public slots:
-    void onSideBarClicked(const QModelIndex &index);
+    void onDeleteActionTriggered();
     void onMainExplorerDoubleClicked(const QModelIndex &index);
+    void onSideBarClicked(const QModelIndex &index);
     void refreshStatusBarCounter();
 
 signals:

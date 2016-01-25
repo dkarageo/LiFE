@@ -109,6 +109,9 @@ void MainWindow::setupMenubarAndToolbar()
     editMenu->addAction(pasteAction);
     editMenu->addAction(deleteAction);
 
+    connect(deleteAction, SIGNAL(triggered(bool)),
+            this, SLOT(onDeleteActionTriggered()));
+
 // Help Menu Actions
     QAction *aboutAction = new QAction(
             QIcon(":/_Images/Icons/Menu/about.png"), "About", this);
@@ -163,6 +166,37 @@ void MainWindow::refreshStatusBarCounter()
     cDir.setFilter(QDir::NoDotAndDotDot | QDir::AllEntries);
 
     ui->statusBar->showMessage(QString::number(cDir.count()) + " objects");
+}
+
+void MainWindow::onDeleteActionTriggered()
+{
+    QModelIndex cIndex = mainExplorer->currentIndex();
+    if(!cIndex.isValid()) return;
+
+    QFileInfo cFile = mainExplorerModel->fileInfo(cIndex);
+
+    QMessageBox::StandardButton choice;
+
+    // Display question dialog only if there is something to remove
+    if((cFile.isDir() | cFile.isFile()) && cFile.isWritable()) {
+        choice = QMessageBox::question(
+                this, "Confirm Deletion",
+                "Do you want to permanently remove " +
+                cFile.completeBaseName() + "?",
+                QMessageBox::No | QMessageBox::Yes
+        );
+    }
+    else return;
+
+    // Simply return if user selects No.
+    if(choice == QMessageBox::No) return;
+
+    if(cFile.isDir()) {
+        mainExplorerModel->rmdir(cIndex);
+    }
+    else if(cFile.isFile()){
+        mainExplorerModel->remove(cIndex);
+    }
 }
 
 //void MainWindow::onCopyActionTriggered()
