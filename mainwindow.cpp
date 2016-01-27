@@ -1,7 +1,8 @@
 #include <QDebug>
-#include "enhancedqt.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "aboutdialog.h"
+#include "enhancedqt.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -129,8 +130,8 @@ void MainWindow::setupMenubarAndToolbar()
 
     helpMenu->addAction(aboutAction);
 
-    //connect(aboutAction, SIGNAL(triggered(bool)),
-    //        this, SLOT(onAboutActionTriggered()));
+    connect(aboutAction, SIGNAL(triggered(bool)),
+            this, SLOT(onAboutActionTriggered()));
 
 // Adding Useful Actions to mainToolbar  
     ui->mainToolBar->addAction(copyAction);
@@ -157,10 +158,10 @@ void MainWindow::setupStatusbar()
 
 // ==== Implementations of slots go here ====
 
-//void MainWindow::onAboutActionTriggered()
-//{
+void MainWindow::onAboutActionTriggered()
+{
 
-//}
+}
 
 void MainWindow::onCopyActionTriggered()
 // Well, Qt IS NOT cross-platform here. GNOME got non-standard mime type

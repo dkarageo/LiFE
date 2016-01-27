@@ -18,7 +18,7 @@ public:
     ~MainWindow();
 
 public slots:
-    //void onAboutActionTriggered();
+    void onAboutActionTriggered();
     void onCopyActionTriggered();
     void onDeleteActionTriggered();
     void onGoUpActionTriggered();
