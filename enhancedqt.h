@@ -13,23 +13,24 @@
  * Though the extreme case of a file being always
  * regenerated is not handled.
  */
-bool threadsafeFileRemove(QFile *file)
+bool threadsafeFileRemove(const QString &path)
 {
+    QFile file(path);
+
     bool removed = false;
 
-    for(int i = 0; i < 3 && file->exists(); ++i) {
+    for(int i = 0; i < 3 && file.exists(); ++i) {
         if(removed && i > 0) {
         // File was removed once, and is here again.
             QThread::msleep(5); // Wait 5ms now,
                                 // and then repeat operation.
         }
 
-        removed = file->remove();
+        removed = file.remove();
     }
 
-    return file->exists();
+    return !file.exists();
 }
-
 
 #endif // ENHANCEDQT_H
 

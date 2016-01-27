@@ -1,6 +1,7 @@
+#include <QDebug>
+#include "enhancedqt.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -60,7 +61,8 @@ MainWindow::MainWindow(QWidget *parent) :
     sideBar->hideColumn(2);
     sideBar->hideColumn(3);
 
-// Setting up additional UI elements
+// Setting up additional elements
+    setupClipboard();
     setupMenubarAndToolbar();
     setupStatusbar();
 
@@ -78,6 +80,11 @@ MainWindow::~MainWindow()
 
 
 // ==== Implementations of private setup methods go here ====
+
+void MainWindow::setupClipboard()
+{
+    clipboard = QApplication::clipboard();
+}
 
 void MainWindow::setupMenubarAndToolbar()
 {
@@ -109,6 +116,10 @@ void MainWindow::setupMenubarAndToolbar()
     editMenu->addAction(pasteAction);
     editMenu->addAction(deleteAction);
 
+    connect(copyAction, SIGNAL(triggered(bool)),
+            this, SLOT(onCopyActionTriggered()));
+    connect(pasteAction, SIGNAL(triggered(bool)),
+            this, SLOT(onPasteActionTriggered()));
     connect(deleteAction, SIGNAL(triggered(bool)),
             this, SLOT(onDeleteActionTriggered()));
 
@@ -117,6 +128,9 @@ void MainWindow::setupMenubarAndToolbar()
             QIcon(":/_Images/Icons/Menu/about.png"), "About", this);
 
     helpMenu->addAction(aboutAction);
+
+    //connect(aboutAction, SIGNAL(triggered(bool)),
+    //        this, SLOT(onAboutActionTriggered()));
 
 // Adding Useful Actions to mainToolbar  
     ui->mainToolBar->addAction(copyAction);
@@ -143,6 +157,34 @@ void MainWindow::setupStatusbar()
 
 // ==== Implementations of slots go here ====
 
+//void MainWindow::onAboutActionTriggered()
+//{
+
+//}
+
+void MainWindow::onCopyActionTriggered()
+// Well, Qt IS NOT cross-platform here. GNOME got non-standard mime type
+// for different files, the same for other windows manager, the same on OSX.
+// Current QMimeDatabase is shitty... and compatible with nothing...
+{
+    // Get current index.
+    QModelIndex cIndex = mainExplorer->currentIndex();
+    if(!cIndex.isValid()) return;
+
+    // Get path of file to be copied.
+    QString cPath = mainExplorerModel->fileInfo(cIndex).absoluteFilePath();
+
+    // Create QMimeData object, that works on Windows and wherever lucky!
+    QMimeData *data = new QMimeData();
+
+    QList<QUrl> urlsList;
+    urlsList.append(QUrl::fromLocalFile(cPath));
+
+    data->setUrls(urlsList);
+
+    clipboard->setMimeData(data);
+}
+
 void MainWindow::onDeleteActionTriggered()
 {
     QModelIndex cIndex = mainExplorer->currentIndex();
@@ -155,10 +197,11 @@ void MainWindow::onDeleteActionTriggered()
     // Display question dialog only if there is something to remove
     if((cFile.isDir() | cFile.isFile()) && cFile.isWritable()) {
         choice = QMessageBox::question(
-                this, "Confirm Deletion",
-                "Do you want to permanently remove " +
-                cFile.completeBaseName() + "?",
-                QMessageBox::No | QMessageBox::Yes
+                    this, "Confirm Deletion",
+                    "Do you want to permanently remove " +
+                    cFile.completeBaseName() + "." +
+                    cFile.completeSuffix() + "?",
+                    QMessageBox::No | QMessageBox::Yes
         );
     }
     else return;
@@ -203,10 +246,79 @@ void MainWindow::onMainExplorerDoubleClicked(const QModelIndex &index)
     mainExplorer->setRootIndex(mainExplorerModel->setRootPath(path));
     emit mainExplorerRootIndexChanged(mainExplorer->rootIndex());
 
+    mainExplorer->setCurrentIndex(mainExplorerModel->index(path).child(1,1));
+
     // Keep sideBar synchronized too.
     QModelIndex sideBarIndex = sideBarModel->index(path);
     sideBar->expand(sideBarIndex);
     sideBar->scrollTo(sideBarIndex, QAbstractItemView::PositionAtTop);
+}
+
+void MainWindow::onPasteActionTriggered()
+{
+    // Get the urls list from clipboard, if any.
+    if(!clipboard->mimeData()->hasUrls()) return;
+
+    QList<QUrl> urls = clipboard->mimeData()->urls();
+
+    // Get current folder's path, which is the parent folder of
+    // currently selected index in mainExplorer view.
+    QString destPath = mainExplorerModel->fileInfo(
+                mainExplorer->currentIndex()).canonicalPath() + "/";
+
+    bool yestoall = false;
+    bool notoall = false;
+
+    foreach(QUrl url, urls) {
+        QString fPath = url.toLocalFile(); // Translate url to absolute path.
+        QFileInfo fileInfo(url.toLocalFile());
+
+        // Create the final absolute path, where fPath file will be copied.
+        QString cFinalPath = destPath + fileInfo.completeBaseName() +
+                             "." + fileInfo.completeSuffix();
+
+        // For each file attempt to copy it
+        if(!QFile::copy(fPath, cFinalPath)) {
+            // copy returned false - handle same filename
+
+            if(yestoall) {
+                // "YesToAll" selected, so don't notify user anymore.
+                if(threadsafeFileRemove(cFinalPath)) {
+                    QFile::copy(fPath, cFinalPath);
+                }
+            }
+            else if(notoall) {
+                // "NoToAll" selected, so just do nothing for this file.
+            }
+            else {
+                // No "YesToAll" selected, so ask user what to do.
+                QMessageBox::StandardButton choice = QMessageBox::question(
+                        this, "How to copy file?",
+                        "File \"" + fileInfo.completeBaseName() +
+                        "." + fileInfo.completeSuffix() +
+                        "\" already exists. Do you want to overwrite it?",
+                        QMessageBox::No | QMessageBox::NoToAll | QMessageBox::Yes | QMessageBox::YesToAll
+                );
+
+                if(choice == QMessageBox::Yes) {
+                    if(threadsafeFileRemove(cFinalPath)) {
+                        QFile::copy(fPath, cFinalPath);
+                    }
+                }
+                else if(choice == QMessageBox::YesToAll) {
+                    yestoall = true;
+
+                    if(threadsafeFileRemove(cFinalPath)) {
+                        QFile::copy(fPath, cFinalPath);
+                    }
+                }
+                else if(choice == QMessageBox::NoToAll) {
+                    notoall = true;
+                }
+                // "No" or anything else - nothing to do, so no else
+            }
+        }
+    }
 }
 
 void MainWindow::onSideBarClicked(const QModelIndex &index)
@@ -226,13 +338,3 @@ void MainWindow::refreshStatusBarCounter()
 
     ui->statusBar->showMessage(QString::number(cDir.count()) + " objects");
 }
-
-//void MainWindow::onCopyActionTriggered()
-//{
-////    QModelIndex cIndex = mainExplorer->currentIndex();
-////    if(!cIndex.isValid()) return;
-
-////    QString cPath = mainExplorerModel->fileInfo(cIndex);
-
-////    QFile()
-//}

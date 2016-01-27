@@ -18,9 +18,12 @@ public:
     ~MainWindow();
 
 public slots:
+    //void onAboutActionTriggered();
+    void onCopyActionTriggered();
     void onDeleteActionTriggered();
     void onGoUpActionTriggered();
     void onMainExplorerDoubleClicked(const QModelIndex &index);
+    void onPasteActionTriggered();
     void onSideBarClicked(const QModelIndex &index);
     void refreshStatusBarCounter();
 
@@ -28,11 +31,18 @@ signals:
     void mainExplorerRootIndexChanged(const QModelIndex &);
 
 private:
+ // UI Elements
     Ui::MainWindow *ui;
     QTreeView *sideBar;
     QTableView *mainExplorer;
     QFileSystemModel *sideBarModel;
     QFileSystemModel *mainExplorerModel;
+
+ // Core Elements
+    QClipboard *clipboard;
+
+ // Setup Methods
+    void setupClipboard();
     void setupMenubarAndToolbar();
     void setupStatusbar();
 };
