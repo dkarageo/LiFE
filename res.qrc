@@ -6,5 +6,6 @@
         <file>_Images/Icons/Menu/about.png</file>
         <file>_Images/Icons/Menu/paste.png</file>
         <file>_Images/Icons/Menu/upper_directory.png</file>
+        <file>_Images/Icons/Logo/logo.png</file>
     </qresource>
 </RCC>
