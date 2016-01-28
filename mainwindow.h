@@ -1,6 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+// ====Forward declarations go here====
+class AboutDialog;
+
 #include <QMainWindow>
 #include <QtCore>
 #include <QtWidgets>
@@ -31,6 +34,9 @@ signals:
     void mainExplorerRootIndexChanged(const QModelIndex &);
 
 private:
+ // Other windows
+    AboutDialog *aboutDialog;
+
  // UI Elements
     Ui::MainWindow *ui;
     QTreeView *sideBar;

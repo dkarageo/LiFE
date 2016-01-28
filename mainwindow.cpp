@@ -160,7 +160,9 @@ void MainWindow::setupStatusbar()
 
 void MainWindow::onAboutActionTriggered()
 {
-
+    aboutDialog = new AboutDialog;
+    aboutDialog->setModal(true);
+    aboutDialog->exec();
 }
 
 void MainWindow::onCopyActionTriggered()

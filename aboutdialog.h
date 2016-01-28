@@ -16,7 +16,11 @@ public:
     ~AboutDialog();
 
 private:
+ // UI properties
     Ui::AboutDialog *ui;
+
+ // Private helper methods
+    QString aboutInfo();
 };
 
 #endif // ABOUTDIALOG_H
