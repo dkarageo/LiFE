@@ -291,6 +291,11 @@ void MainWindow::onMainExplorerDoubleClicked(const QModelIndex &index)
         sideBar->expand(sideBarIndex);
         sideBar->scrollTo(sideBarIndex, QAbstractItemView::PositionAtTop);
     }
+    else if(mainExplorerModel->fileInfo(index).isFile()) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(
+                                      mainExplorerModel->filePath(index)
+        ));
+    }
 }
 
 void MainWindow::onPasteActionTriggered()
