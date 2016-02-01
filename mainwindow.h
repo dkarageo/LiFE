@@ -39,8 +39,11 @@ public slots:
     void onDeleteActionTriggered();
     void onGoUpActionTriggered();
     void onMainExplorerDoubleClicked(const QModelIndex &index);
+    void onOpenActionTriggered();
     void onPasteActionTriggered();
     void onSideBarClicked(const QModelIndex &index);
+
+    void popupContextMenu(const QPoint &point);
 
     void refreshStatusBarCounter();
 
@@ -69,6 +72,15 @@ private:
 
  // Core Elements
     QClipboard *clipboard;
+
+ // Actions
+    QAction *exitAction;
+    QAction *copyAction;
+    QAction *pasteAction;
+    QAction *deleteAction;
+    QAction *aboutAction;
+    QAction *goUp;
+    QAction *openAction;
 
  // Setup Methods
     void setupClipboard();

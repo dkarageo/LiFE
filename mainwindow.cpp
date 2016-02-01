@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mainExplorer = new QTableView(this);
     mainExplorer->verticalHeader()->hide();
     mainExplorer->setEditTriggers(QAbstractItemView::EditKeyPressed);
+    mainExplorer->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // Adding the two main views inside a splitter
     QSplitter *splitter = new QSplitter(this);
@@ -82,6 +83,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, SLOT(setProperMainExplorerCurrentIndex()));
     connect(this, SIGNAL(mainExplorerRootIndexChanged(QModelIndex)),
             this, SLOT(updateWindowTitle()));
+    connect(mainExplorer, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(popupContextMenu(QPoint)));
 }
 
 MainWindow::~MainWindow()
@@ -129,7 +132,7 @@ void MainWindow::setupMenubarAndToolbar()
     ui->menuBar->addMenu(helpMenu);
 
 // File Menu Actions
-    QAction *exitAction = new QAction(
+    exitAction = new QAction(
             QIcon(":/_Images/Icons/Menu/exit.png"), "Exit", this);
 
     fileMenu->addAction(exitAction);
@@ -137,11 +140,11 @@ void MainWindow::setupMenubarAndToolbar()
     connect(exitAction, SIGNAL(triggered(bool)), this, SLOT(close()));
 
 // Edit Menu Actions
-    QAction *copyAction = new QAction(
+    copyAction = new QAction(
             QIcon(":/_Images/Icons/Menu/copy.png"), "Copy", this);
-    QAction *pasteAction = new QAction(
+    pasteAction = new QAction(
             QIcon(":/_Images/Icons/Menu/paste.png"), "Paste", this);
-    QAction *deleteAction = new QAction(
+    deleteAction = new QAction(
             QIcon(":/_Images/Icons/Menu/delete.png"), "Delete", this);
 
     editMenu->addAction(copyAction);
@@ -164,17 +167,25 @@ void MainWindow::setupMenubarAndToolbar()
     connect(aboutAction, SIGNAL(triggered(bool)),
             this, SLOT(onAboutActionTriggered()));
 
-// Adding Useful Actions to mainToolbar  
-    ui->mainToolBar->addAction(copyAction);
-    ui->mainToolBar->addAction(pasteAction);
-    ui->mainToolBar->addAction(deleteAction);
-
-    QAction *goUp = new QAction(
+// Other Actions
+    goUp = new QAction(
             QIcon(":/_Images/Icons/Menu/upper_directory.png"), "Up", this);
-    ui->mainToolBar->insertAction(copyAction, goUp);
+
+    openAction = new QAction("Open", this);
+    QFont font = openAction->font();
+    font.setBold(true);
+    openAction->setFont(font);
 
     connect(goUp, SIGNAL(triggered(bool)),
             this, SLOT(onGoUpActionTriggered()));
+    connect(openAction, SIGNAL(triggered(bool)),
+            this, SLOT(onOpenActionTriggered()));
+
+// Adding Useful Actions to mainToolbar
+    ui->mainToolBar->addAction(goUp);
+    ui->mainToolBar->addAction(copyAction);
+    ui->mainToolBar->addAction(pasteAction);
+    ui->mainToolBar->addAction(deleteAction);    
 }
 
 void MainWindow::setupStatusbar()
@@ -298,6 +309,21 @@ void MainWindow::onMainExplorerDoubleClicked(const QModelIndex &index)
     }
 }
 
+void MainWindow::onOpenActionTriggered()
+{
+    QString cPath = currentItemAbsolutePath();
+
+    if(QFileInfo(currentItemAbsolutePath()).isDir()) {
+        // Open folders using the same mechanism as double clicking them.
+        onMainExplorerDoubleClicked(mainExplorer->currentIndex());
+    }
+    else {
+        QDesktopServices::openUrl(
+                    QUrl::fromLocalFile(cPath));
+    }
+
+}
+
 void MainWindow::onPasteActionTriggered()
 {
     // Get the urls list from clipboard, if any.
@@ -372,6 +398,31 @@ void MainWindow::onSideBarClicked(const QModelIndex &index)
 
     mainExplorer->setRootIndex(mainExplorerModel->setRootPath(path));
     emit mainExplorerRootIndexChanged(mainExplorer->rootIndex());
+}
+
+void MainWindow::popupContextMenu(const QPoint &point)
+{
+    QModelIndex index = mainExplorer->indexAt(point);
+
+    QMenu *contextMenu = new QMenu(this);
+    QList<QAction *> actions;
+
+    if(index != QModelIndex() &&
+       !mainExplorerModel->fileInfo(index).isRoot())
+    {
+        // index is valid - handle a proper file/dir
+        actions << openAction;
+        actions << contextMenu->addSeparator();
+        actions << copyAction;
+        actions << deleteAction;
+    }
+    else {
+        // index is invalid - provide generic context menu
+        actions << pasteAction;
+    }
+
+    contextMenu->addActions(actions);
+    contextMenu->popup(mainExplorer->viewport()->mapToGlobal(point));
 }
 
 void MainWindow::refreshStatusBarCounter()
