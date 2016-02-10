@@ -3,6 +3,7 @@
 #include "ui_mainwindow.h"
 #include "aboutdialog.h"
 #include "enhancedqt.h"
+#include "guifile.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -146,10 +147,13 @@ void MainWindow::setupMenubarAndToolbar()
             QIcon(":/_Images/Icons/Menu/paste.png"), "Paste", this);
     deleteAction = new QAction(
             QIcon(":/_Images/Icons/Menu/delete.png"), "Delete", this);
+    detailAction = new QAction(
+                "Detail", this);
 
     editMenu->addAction(copyAction);
     editMenu->addAction(pasteAction);
     editMenu->addAction(deleteAction);
+    editMenu->addAction(detailAction);
 
     connect(copyAction, SIGNAL(triggered(bool)),
             this, SLOT(onCopyActionTriggered()));
@@ -157,6 +161,8 @@ void MainWindow::setupMenubarAndToolbar()
             this, SLOT(onPasteActionTriggered()));
     connect(deleteAction, SIGNAL(triggered(bool)),
             this, SLOT(onDeleteActionTriggered()));
+    connect(detailAction, SIGNAL(triggered(bool)),
+            this, SLOT(onDetailActionTriggered()));
 
 // Help Menu Actions
     QAction *aboutAction = new QAction(
@@ -259,6 +265,12 @@ void MainWindow::onDeleteActionTriggered()
     else if(cFile.isFile()){
         mainExplorerModel->remove(cIndex);
     }
+}
+
+void MainWindow::onDetailActionTriggered()
+{
+    GuiFile file(currentItemAbsolutePath());
+    file.guiDetail();
 }
 
 void MainWindow::onGoUpActionTriggered()
@@ -415,6 +427,8 @@ void MainWindow::popupContextMenu(const QPoint &point)
         actions << contextMenu->addSeparator();
         actions << copyAction;
         actions << deleteAction;
+        actions << contextMenu->addSeparator();
+        actions << detailAction;
     }
     else {
         // index is invalid - provide generic context menu

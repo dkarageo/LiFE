@@ -37,6 +37,7 @@ public slots:
     void onAboutActionTriggered();
     void onCopyActionTriggered();
     void onDeleteActionTriggered();
+    void onDetailActionTriggered();
     void onGoUpActionTriggered();
     void onMainExplorerDoubleClicked(const QModelIndex &index);
     void onOpenActionTriggered();
@@ -81,6 +82,7 @@ private:
     QAction *aboutAction;
     QAction *goUp;
     QAction *openAction;
+    QAction *detailAction;
 
  // Setup Methods
     void setupClipboard();

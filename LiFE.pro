@@ -14,14 +14,21 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    guifile.cpp \
+    filedetail.cpp \
+    dirsizecounter.cpp
 
 HEADERS  += mainwindow.h \
     enhancedqt.h \
-    aboutdialog.h
+    aboutdialog.h \
+    guifile.h \
+    filedetail.h \
+    dirsizecounter.h
 
 FORMS    += mainwindow.ui \
-    aboutdialog.ui
+    aboutdialog.ui \
+    filedetail.ui
 
 RESOURCES += \
     res.qrc
