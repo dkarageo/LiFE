@@ -17,18 +17,21 @@ SOURCES += main.cpp\
     aboutdialog.cpp \
     guifile.cpp \
     filedetail.cpp \
-    dirsizecounter.cpp
+    dirsizecounter.cpp \
+    copydialog.cpp
 
 HEADERS  += mainwindow.h \
     enhancedqt.h \
     aboutdialog.h \
     guifile.h \
     filedetail.h \
-    dirsizecounter.h
+    dirsizecounter.h \
+    copydialog.h
 
 FORMS    += mainwindow.ui \
     aboutdialog.ui \
-    filedetail.ui
+    filedetail.ui \
+    copydialog.ui
 
 RESOURCES += \
     res.qrc
