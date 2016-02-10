@@ -4,19 +4,13 @@
 GuiFile::GuiFile(const QString &name) :
     QFile(name)
 {
-
+    // Nothing here
 }
-
-//GuiFile::GuiFile(const QFile &file) :
-//    QFile(file)
-//{
-
-//}
 
 GuiFile::GuiFile(const GuiFile &file) :
     QFile(file.fileName())
 {
-
+    // Nothing here
 }
 
 void GuiFile::guiDetail()

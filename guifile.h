@@ -18,7 +18,6 @@ class GuiFile : public QFile
     Q_OBJECT
 public:
     GuiFile(const QString &name);
-    //GuiFile(const QFile &file);
     GuiFile(const GuiFile &file);
 
     //void guiCopy(const QString &to);
