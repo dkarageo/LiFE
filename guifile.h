@@ -17,11 +17,12 @@ class GuiFile : public QFile
 {
     Q_OBJECT
 public:
+    GuiFile();
     GuiFile(const QString &name);
     GuiFile(const GuiFile &file);
 
     //void guiCopy(const QString &to);
-    //void guiCopy(const QString &from, const QString &to) const;
+    bool guiCopy(const QString &from, const QString &to) const;
 
     void guiDetail();
 };
