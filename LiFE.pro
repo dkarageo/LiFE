@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     guifile.cpp \
     filedetail.cpp \
     dirsizecounter.cpp \
-    copydialog.cpp
+    copydialog.cpp \
+    filecopier.cpp
 
 HEADERS  += mainwindow.h \
     enhancedqt.h \
@@ -26,7 +27,8 @@ HEADERS  += mainwindow.h \
     guifile.h \
     filedetail.h \
     dirsizecounter.h \
-    copydialog.h
+    copydialog.h \
+    filecopier.h
 
 FORMS    += mainwindow.ui \
     aboutdialog.ui \

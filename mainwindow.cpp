@@ -359,14 +359,16 @@ void MainWindow::onPasteActionTriggered()
         QString cFinalPath = destPath + fileInfo.completeBaseName() +
                              "." + fileInfo.completeSuffix();
 
+        GuiFile guiFile;
+
         // For each file attempt to copy it
-        if(!QFile::copy(fPath, cFinalPath)) {
+        if(!guiFile.guiCopy(fPath, cFinalPath)) {
             // copy returned false - handle same filename
 
             if(yestoall) {
                 // "YesToAll" selected, so don't notify user anymore.
                 if(threadsafeFileRemove(cFinalPath)) {
-                    QFile::copy(fPath, cFinalPath);
+                    guiFile.guiCopy(fPath, cFinalPath);
                 }
             }
             else if(notoall) {
@@ -384,14 +386,14 @@ void MainWindow::onPasteActionTriggered()
 
                 if(choice == QMessageBox::Yes) {
                     if(threadsafeFileRemove(cFinalPath)) {
-                        QFile::copy(fPath, cFinalPath);
+                        guiFile.guiCopy(fPath, cFinalPath);
                     }
                 }
                 else if(choice == QMessageBox::YesToAll) {
                     yestoall = true;
 
                     if(threadsafeFileRemove(cFinalPath)) {
-                        QFile::copy(fPath, cFinalPath);
+                        guiFile.guiCopy(fPath, cFinalPath);
                     }
                 }
                 else if(choice == QMessageBox::NoToAll) {
