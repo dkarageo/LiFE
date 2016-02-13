@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QProgressBar>
 #include "copydialog.h"
+#include "dirsizecounter.h"
 #include "ui_copydialog.h"
 
 CopyDialog::CopyDialog(const QFile &from, const QFile &to, QWidget *parent) :
@@ -15,7 +16,21 @@ CopyDialog::CopyDialog(const QFile &from, const QFile &to, QWidget *parent) :
     QFileInfo toInfo(to);
 
     // Keep file's size for later usage.
-    size_ = fromInfo.size();
+    if(fromInfo.isDir()) {
+        size_ = 0;
+
+        DirSizeCounter *counter = new DirSizeCounter(this);
+        counter->countSize(fromInfo.absoluteFilePath());
+
+        connect(counter, SIGNAL(sizePartlyCounted(qint64)),
+                this, SLOT(setSize(qint64)));
+        connect(counter, SIGNAL(sizeCounted(qint64)),
+                this, SLOT(setSize(qint64)));
+    }
+    else {
+        size_ = fromInfo.size();
+    }
+
 
 // Setting window properties
     // Creating a vertical layout for the whole window.
@@ -58,9 +73,14 @@ CopyDialog::~CopyDialog()
 
 void CopyDialog::setSizeCopied(qint64 size)
 {
-    prog_->setValue((size * 100) / size_);
+    if(size_) prog_->setValue((size * 100) / size_);
 
     status_->setText("Copied:" + QString::number(size) +
                      " out of " + QString::number(size_) +
                      " bytes.");
+}
+
+void CopyDialog::setSize(qint64 size)
+{
+    size_ = size;
 }

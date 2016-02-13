@@ -32,6 +32,9 @@ private:
     QLabel *status_;
 
     qint64 size_;
+
+private slots:
+    void setSize(qint64 size);
 };
 
 #endif // COPYDIALOG_H
