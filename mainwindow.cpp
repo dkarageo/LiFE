@@ -413,10 +413,8 @@ void MainWindow::onPasteActionTriggered()
 
     QList<QUrl> urls = clipboard->mimeData()->urls();
 
-    // Get current folder's path, which is the parent folder of
-    // currently selected index in mainExplorer view.
-    QString destPath = mainExplorerModel->fileInfo(
-                mainExplorer->currentIndex()).canonicalPath() + "/";
+    // Create destination path.
+    QString destPath = mainExplorerModel->rootPath() + "/";
 
     foreach(QUrl url, urls) {
         QString fPath = url.toLocalFile(); // Translate url to absolute path.
