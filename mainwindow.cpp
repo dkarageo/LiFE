@@ -142,26 +142,42 @@ void MainWindow::setupMenubarAndToolbar()
     ui->menuBar->addMenu(helpMenu);
 
 // File Menu Actions
+    goUp = new QAction(
+            QIcon(":/_Images/Icons/Menu/upper_directory.png"), "Up", this);
+    goUp->setShortcut(QKeySequence(QKeySequence::MoveToPreviousPage));
+
     exitAction = new QAction(
             QIcon(":/_Images/Icons/Menu/exit.png"), "Exit", this);
+    exitAction->setShortcut(QKeySequence(QKeySequence::Close));
 
+    fileMenu->addAction(goUp);
+    fileMenu->addSeparator();
     fileMenu->addAction(exitAction);
 
+    connect(goUp, SIGNAL(triggered(bool)),
+            this, SLOT(onGoUpActionTriggered()));
     connect(exitAction, SIGNAL(triggered(bool)), this, SLOT(close()));
 
 // Edit Menu Actions
     copyAction = new QAction(
             QIcon(":/_Images/Icons/Menu/copy.png"), "Copy", this);
+    copyAction->setShortcut(QKeySequence(QKeySequence::Copy));
+
     pasteAction = new QAction(
             QIcon(":/_Images/Icons/Menu/paste.png"), "Paste", this);
+    pasteAction->setShortcut(QKeySequence(QKeySequence::Paste));
+
     deleteAction = new QAction(
             QIcon(":/_Images/Icons/Menu/delete.png"), "Delete", this);
+    deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
+
     detailAction = new QAction(
             QIcon(":/_Images/Icons/Menu/properties.png"), "Properties", this);
 
     editMenu->addAction(copyAction);
     editMenu->addAction(pasteAction);
     editMenu->addAction(deleteAction);
+    editMenu->addSeparator();
     editMenu->addAction(detailAction);
 
     connect(copyAction, SIGNAL(triggered(bool)),
@@ -176,6 +192,7 @@ void MainWindow::setupMenubarAndToolbar()
 // Help Menu Actions
     QAction *aboutAction = new QAction(
             QIcon(":/_Images/Icons/Menu/about.png"), "About", this);
+    aboutAction->setShortcut(QKeySequence(QKeySequence::HelpContents));
 
     helpMenu->addAction(aboutAction);
 
@@ -183,9 +200,6 @@ void MainWindow::setupMenubarAndToolbar()
             this, SLOT(onAboutActionTriggered()));
 
 // Other Actions
-    goUp = new QAction(
-            QIcon(":/_Images/Icons/Menu/upper_directory.png"), "Up", this);
-
     openAction = new QAction("Open", this);
     QFont font = openAction->font();
     font.setBold(true);
@@ -193,9 +207,8 @@ void MainWindow::setupMenubarAndToolbar()
 
     newFolderAction = new QAction(
                 QIcon(":/_Images/Icons/Menu/new_folder.png"), "New Folder", this);
+    newFolderAction->setShortcut(QKeySequence(QKeySequence::New));
 
-    connect(goUp, SIGNAL(triggered(bool)),
-            this, SLOT(onGoUpActionTriggered()));
     connect(openAction, SIGNAL(triggered(bool)),
             this, SLOT(onOpenActionTriggered()));
     connect(newFolderAction, SIGNAL(triggered(bool)),
