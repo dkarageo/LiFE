@@ -41,6 +41,7 @@ public slots:
     void onDetailActionTriggered();
     void onGoUpActionTriggered();
     void onMainExplorerDoubleClicked(const QModelIndex &index);
+    void onNewFolderAction();
     void onOpenActionTriggered();
     void onPasteActionTriggered();
     void onSideBarClicked(const QModelIndex &index);
@@ -83,6 +84,7 @@ private:
     QAction *aboutAction;
     QAction *goUp;
     QAction *openAction;
+    QAction *newFolderAction;
     QAction *detailAction;
 
  // Setup Methods

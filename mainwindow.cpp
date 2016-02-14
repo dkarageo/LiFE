@@ -189,16 +189,22 @@ void MainWindow::setupMenubarAndToolbar()
     font.setBold(true);
     openAction->setFont(font);
 
+    newFolderAction = new QAction(
+                QIcon(":/_Images/Icons/Menu/new_folder.png"), "New Folder", this);
+
     connect(goUp, SIGNAL(triggered(bool)),
             this, SLOT(onGoUpActionTriggered()));
     connect(openAction, SIGNAL(triggered(bool)),
             this, SLOT(onOpenActionTriggered()));
+    connect(newFolderAction, SIGNAL(triggered(bool)),
+            this, SLOT(onNewFolderAction()));
 
 // Adding Useful Actions to mainToolbar
     ui->mainToolBar->addAction(goUp);
     ui->mainToolBar->addAction(copyAction);
     ui->mainToolBar->addAction(pasteAction);
-    ui->mainToolBar->addAction(deleteAction);    
+    ui->mainToolBar->addAction(deleteAction);
+    ui->mainToolBar->addAction(newFolderAction);
 }
 
 void MainWindow::setupStatusbar()
@@ -326,6 +332,30 @@ void MainWindow::onMainExplorerDoubleClicked(const QModelIndex &index)
                                       mainExplorerModel->filePath(index)
         ));
     }
+}
+
+void MainWindow::onNewFolderAction()
+{
+    QDir cDir(mainExplorerModel->rootPath());
+
+    QString newName = "New Folder";
+
+    int i = 2;
+
+    while(QFile(mainExplorerModel->rootPath() + '/' + newName).exists())
+    {
+        newName = "New Folder " + QString::number(i);
+        ++i;
+    }
+
+    cDir.mkdir(newName);
+
+    mainExplorer->setCurrentIndex(
+                mainExplorerModel->index(
+                    mainExplorerModel->rootPath() + '/' + newName
+    ));
+
+    mainExplorer->edit(mainExplorer->currentIndex());
 }
 
 void MainWindow::onOpenActionTriggered()
@@ -493,6 +523,8 @@ void MainWindow::popupContextMenu(const QPoint &point)
     else {
         // index is invalid - provide generic context menu
         actions << pasteAction;
+        actions << contextMenu->addSeparator();
+        actions << newFolderAction;
     }
 
     contextMenu->addActions(actions);
