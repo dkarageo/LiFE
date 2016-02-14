@@ -7,6 +7,7 @@ class CopyDialog;
 // ==== Includes go here ====
 #include <QObject>
 #include <QThread>
+#include <QMetaType>
 
 /*
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

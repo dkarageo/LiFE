@@ -8,9 +8,12 @@
 #include "filecopier.h"
 #include <QDebug>
 
+
 FileCopier::FileCopier(CopyDialog *dialog, QObject *parent) :
     QObject(parent)
 {
+    qRegisterMetaType<FileCopier::ErrorType>("FileCopier::ErrorType");
+
     dialog_ = dialog;
 
     FileCopierWorker *worker = new FileCopierWorker;
@@ -34,6 +37,8 @@ FileCopier::FileCopier(CopyDialog *dialog, QObject *parent) :
     connect(this, SIGNAL(operate(QString,QString)),
             this, SLOT(openCopyDialog(QString,QString)));
     connect(worker, SIGNAL(copyDone()),
+            this, SLOT(closeCopyDialog()));
+    connect(worker, SIGNAL(error(FileCopier::ErrorType)),
             this, SLOT(closeCopyDialog()));
 
     thread_.start();
@@ -118,8 +123,13 @@ bool FileCopierWorker::recursiveCopier(const QString &from, const QString &to)
 
         // If from is a dir path, assuming that to is also a dir path.
         QDir toDir(to);
-        // If to dir doesn't exist, create it.
-        if(!toDir.exists()) toDir.mkdir(to);
+
+        if(toDir.exists()) {
+            emit error(FileCopier::Exists);
+            return false;
+        }
+
+        toDir.mkdir(to);
 
         QDirIterator iter(fromDir);
 
@@ -154,6 +164,8 @@ bool FileCopierWorker::recursiveCopier(const QString &from, const QString &to)
             fromFile.close();
             return false;
         }
+
+        qDebug() << toFile.fileName();
 
         if(!toFile.open(QFile::WriteOnly)) {
             // Dest can't be opened -> General Error
