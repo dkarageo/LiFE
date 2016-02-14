@@ -231,18 +231,17 @@ void MainWindow::onCopyActionTriggered()
 // Current QMimeDatabase is shitty... and compatible with nothing...
 {
     // Get current index.
-    QModelIndex cIndex = mainExplorer->currentIndex();
-    if(!cIndex.isValid()) return;
+    QModelIndexList cIndexes = mainExplorer->selectionModel()->selectedIndexes();
+    QList<QUrl> urlsList;
 
-    // Get path of file to be copied.
-    QString cPath = mainExplorerModel->fileInfo(cIndex).absoluteFilePath();
+    foreach(QModelIndex cIndex, cIndexes) {
+        // Get path of file to be copied.
+        QString cPath = mainExplorerModel->fileInfo(cIndex).absoluteFilePath();
+        urlsList.append(QUrl::fromLocalFile(cPath));
+    }
 
     // Create QMimeData object, that works on Windows and wherever lucky!
     QMimeData *data = new QMimeData();
-
-    QList<QUrl> urlsList;
-    urlsList.append(QUrl::fromLocalFile(cPath));
-
     data->setUrls(urlsList);
 
     clipboard->setMimeData(data);
