@@ -273,10 +273,10 @@ void MainWindow::onDeleteActionTriggered()
     if(choice == QMessageBox::No) return;
 
     if(cFile.isDir()) {
-        mainExplorerModel->rmdir(cIndex);
+        threadsafeFileRemove(cFile.absoluteFilePath());
     }
     else if(cFile.isFile()){
-        mainExplorerModel->remove(cIndex);
+        threadsafeFileRemove(mainExplorerModel->filePath(cIndex));
     }
 }
 
