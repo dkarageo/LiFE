@@ -22,10 +22,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Creating the two main views of the UI
     sideBar = new QTreeView(this);
+    sideBar->setSortingEnabled(true);
     sideBar->header()->hide();
     sideBar->setEditTriggers(QAbstractItemView::EditKeyPressed);
 
     mainExplorer = new QTableView(this);
+    mainExplorer->setSortingEnabled(true);
     mainExplorer->verticalHeader()->hide();
     mainExplorer->setEditTriggers(QAbstractItemView::EditKeyPressed);
     mainExplorer->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -61,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mainExplorerModel->setRootPath(initialRootPath);
     mainExplorerModel->setFilter(QDir::NoDotAndDotDot | QDir::AllEntries);
 
-    // Adding models to views.
+    // Adding models to views
     sideBar->setModel(sideBarModel);
     mainExplorer->setModel(mainExplorerModel);
 
@@ -69,8 +71,6 @@ MainWindow::MainWindow(QWidget *parent) :
     sideBar->hideColumn(1);
     sideBar->hideColumn(2);
     sideBar->hideColumn(3);
-    mainExplorer->sortByColumn(0, Qt::AscendingOrder);
-    sideBar->sortByColumn(0, Qt::AscendingOrder);
 
 // Setting up additional elements
     setupClipboard();
@@ -498,7 +498,6 @@ void MainWindow::handlePasteError(FileCopier::ErrorType err, GuiFile *file,
 
                 if(choice == QMessageBox::Yes) {
                     if(threadsafeFileRemove(to)) {
-                        qDebug() << "Filename: " << to;
                         file->guiCopy(to);
                     }
                 }
