@@ -8,5 +8,6 @@
         <file>_Images/Icons/Menu/upper_directory.png</file>
         <file>_Images/Icons/Logo/logo.png</file>
         <file>_Images/Icons/Menu/new_folder.png</file>
+        <file>_Images/Icons/Menu/properties.png</file>
     </qresource>
 </RCC>

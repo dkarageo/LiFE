@@ -155,7 +155,7 @@ void MainWindow::setupMenubarAndToolbar()
     deleteAction = new QAction(
             QIcon(":/_Images/Icons/Menu/delete.png"), "Delete", this);
     detailAction = new QAction(
-                "Detail", this);
+            QIcon(":/_Images/Icons/Menu/properties.png"), "Properties", this);
 
     editMenu->addAction(copyAction);
     editMenu->addAction(pasteAction);

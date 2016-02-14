@@ -200,7 +200,7 @@ void FileDetail::setIcon(const QIcon &icon)
 void FileDetail::setFileName(const QString &name)
 {
     fileName_->setText(name);
-    this->setWindowTitle("Detail: " + name);
+    this->setWindowTitle("Properties: " + name);
 }
 
 void FileDetail::setFileType(const QString &type)
