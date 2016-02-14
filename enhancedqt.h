@@ -2,16 +2,23 @@
 #define ENHANCEDQT_H
 
 #include <QThread>
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 
-/*
- * Qt's QFile::remove() doesn't take care the case
- * where a file removed by it is immediately created
- * by another thread. threadsafeFileRemove() is
- * actually doing a three times remove of the file
- * to decrease the possibilities of this to happen.
- * Though the extreme case of a file being always
- * regenerated is not handled.
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Qt's QFile::remove() or QDir::removeRecursively() doesn't take
+ * care the case where a file removed by them is immediately created
+ * by another thread.
+ *
+ * threadsafeFileRemove() is actually doing a three times remove
+ * of the file/dir to decrease the possibilities of this to happen.
+ * Though the extreme case of a file being always regenerated is
+ * not handled.
+ *
+ * It removes files using QFile::remove() and dirs using
+ * QDir::removeRecursively() making it the all-in-one deleter.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 bool threadsafeFileRemove(const QString &path)
 {
@@ -26,7 +33,15 @@ bool threadsafeFileRemove(const QString &path)
                                 // and then repeat operation.
         }
 
-        removed = file.remove();
+        QFileInfo info(file);
+
+        if(info.isDir()) {
+            QDir dir(info.absoluteFilePath());
+            removed = dir.removeRecursively();
+        }
+        else {
+            removed = file.remove();
+        }
     }
 
     return !file.exists();
