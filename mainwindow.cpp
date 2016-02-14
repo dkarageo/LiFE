@@ -75,6 +75,13 @@ MainWindow::MainWindow(QWidget *parent) :
     setupMenubarAndToolbar();
     setupStatusbar();
 
+// Initializing paste tools
+    errors_ = new QLinkedList<UnhandledCopyError>;
+    yestoall_ = false;
+    notoall_ = false;
+    existsDialogOpen_ = false;
+    errorsAlreadyHandled_ = false;
+
 // SIGNAL-SLOT connections go here
     connect(sideBar, SIGNAL(clicked(QModelIndex)),
             this, SLOT(onSideBarClicked(QModelIndex)));
@@ -348,34 +355,62 @@ void MainWindow::onPasteActionTriggered()
     QString destPath = mainExplorerModel->fileInfo(
                 mainExplorer->currentIndex()).canonicalPath() + "/";
 
-    bool yestoall = false;
-    bool notoall = false;
-
     foreach(QUrl url, urls) {
         QString fPath = url.toLocalFile(); // Translate url to absolute path.
         QFileInfo fileInfo(url.toLocalFile());
 
+        QString cFinalPath;
+
         // Create the final absolute path, where fPath file will be copied.
-        QString cFinalPath = destPath + fileInfo.completeBaseName() +
-                             "." + fileInfo.completeSuffix();
+        if(fileInfo.isDir()) {
+            cFinalPath = destPath + fileInfo.completeBaseName();
+        }
+        else {
+            cFinalPath = destPath + fileInfo.completeBaseName() +
+                         "." + fileInfo.completeSuffix();
+        }
 
-        GuiFile guiFile;
+        GuiFile *copier = new GuiFile(fPath);
+        copier->guiCopy(cFinalPath);
 
-        // For each file attempt to copy it
-        if(!guiFile.guiCopy(fPath, cFinalPath)) {
-            // copy returned false - handle same filename
+        connect(copier, SIGNAL(fileCopied(GuiFile *)),
+                copier, SLOT(deleteLater()));
+        connect(copier, SIGNAL(copyError(FileCopier::ErrorType, GuiFile *, const QString &)),
+                this, SLOT(handlePasteError(FileCopier::ErrorType, GuiFile *, const QString &)));
+    }
+}
 
-            if(yestoall) {
+void MainWindow::handlePasteError(FileCopier::ErrorType err, GuiFile *file,
+                                  const QString &to)
+{
+    switch(err) {
+        case FileCopier::Exists:
+            if(yestoall_) {
                 // "YesToAll" selected, so don't notify user anymore.
-                if(threadsafeFileRemove(cFinalPath)) {
-                    guiFile.guiCopy(fPath, cFinalPath);
+                if(threadsafeFileRemove(to)) {
+                    file->guiCopy(to);
                 }
             }
-            else if(notoall) {
+            else if(notoall_) {
                 // "NoToAll" selected, so just do nothing for this file.
             }
             else {
                 // No "YesToAll" selected, so ask user what to do.
+
+                QFileInfo fileInfo(*((QFile *)file));
+
+                // A simple mechanism to queue exist error handlings so only one dialog
+                // is opened at a time, and if a mass prompt given, no other is opened.
+                if(existsDialogOpen_) {
+                    UnhandledCopyError curErr = {err, file, to};
+                    errors_->append(curErr);
+                    return;
+                }
+
+                // Indicates that a dialog asking about Exist error is opened.
+                // So next errors, are gonna be queued.
+                existsDialogOpen_ = true;
+
                 QMessageBox::StandardButton choice = QMessageBox::question(
                         this, "How to copy file?",
                         "File \"" + fileInfo.completeBaseName() +
@@ -384,24 +419,47 @@ void MainWindow::onPasteActionTriggered()
                         QMessageBox::No | QMessageBox::NoToAll | QMessageBox::Yes | QMessageBox::YesToAll
                 );
 
+                // Dialog closed.
+                existsDialogOpen_ = false;
+
                 if(choice == QMessageBox::Yes) {
-                    if(threadsafeFileRemove(cFinalPath)) {
-                        guiFile.guiCopy(fPath, cFinalPath);
+                    if(threadsafeFileRemove(to)) {
+                        qDebug() << "Filename: " << to;
+                        file->guiCopy(to);
                     }
                 }
                 else if(choice == QMessageBox::YesToAll) {
-                    yestoall = true;
+                    yestoall_ = true;
 
-                    if(threadsafeFileRemove(cFinalPath)) {
-                        guiFile.guiCopy(fPath, cFinalPath);
+                    if(threadsafeFileRemove(to)) {
+                        file->guiCopy(to);
                     }
                 }
                 else if(choice == QMessageBox::NoToAll) {
-                    notoall = true;
+                    notoall_ = true;
                 }
                 // "No" or anything else - nothing to do, so no else
             }
+        break;
+
+        default: // Just do nothing on other errors.
+            return;
+    }
+
+    if(!existsDialogOpen_ && !errorsAlreadyHandled_) {
+        errorsAlreadyHandled_ = true;
+
+        while(errors_->count() > 0) {
+            UnhandledCopyError uErr = errors_->first();
+
+            handlePasteError(uErr.err, uErr.file, uErr.to);
+
+            errors_->removeFirst();
         }
+
+        errorsAlreadyHandled_ = false;
+        yestoall_ = false;
+        notoall_ = false;
     }
 }
 

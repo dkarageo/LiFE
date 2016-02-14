@@ -7,6 +7,7 @@ class AboutDialog;
 #include <QMainWindow>
 #include <QtCore>
 #include <QtWidgets>
+#include "guifile.h"
 
 namespace Ui {
 class MainWindow;
@@ -88,6 +89,25 @@ private:
     void setupClipboard();
     void setupMenubarAndToolbar();
     void setupStatusbar();
+
+ // Private members used for paste operation.
+    typedef struct {
+        FileCopier::ErrorType err;
+        GuiFile *file;
+        QString to;
+    } UnhandledCopyError;
+
+    QLinkedList<UnhandledCopyError> *errors_;
+
+    bool yestoall_;
+    bool notoall_;
+    bool existsDialogOpen_;
+    bool errorsAlreadyHandled_;
+
+
+private slots:
+    // Used to handle errors occured during file pasting.
+    void handlePasteError(FileCopier::ErrorType, GuiFile *, const QString &to);
 };
 
 #endif // MAINWINDOW_H
