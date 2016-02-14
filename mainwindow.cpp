@@ -251,33 +251,65 @@ void MainWindow::onCopyActionTriggered()
 
 void MainWindow::onDeleteActionTriggered()
 {
-    QModelIndex cIndex = mainExplorer->currentIndex();
-    if(!cIndex.isValid()) return;
+    QModelIndexList indexes = mainExplorer->selectionModel()->selectedRows();
 
-    QFileInfo cFile = mainExplorerModel->fileInfo(cIndex);
+    QListIterator<QModelIndex> iter(indexes);
+    QFileInfoList fInfos;
 
-    QMessageBox::StandardButton choice;
+    // From selected indexes, create a QFileInfoList only
+    // containing files that can be deleted.
+    while(iter.hasNext()) {
+        QModelIndex cIndex = iter.next();
 
-    // Display question dialog only if there is something to remove
-    if((cFile.isDir() | cFile.isFile()) && cFile.isWritable()) {
-        choice = QMessageBox::question(
-                    this, "Confirm Deletion",
-                    "Do you want to permanently remove " +
-                    cFile.completeBaseName() + "." +
-                    cFile.completeSuffix() + "?",
-                    QMessageBox::No | QMessageBox::Yes
-        );
+        // Check further only for valid indexes.
+        if(cIndex.isValid()) {
+            QFileInfo info = mainExplorerModel->fileInfo(cIndex);
+
+            // And the actuall check on a valid index.
+            if((info.isDir() | info.isFile()) && !info.isRoot() && info.isWritable()) {
+                fInfos.append(info);
+            }
+        }
     }
-    else return;
+
+    int fCount = fInfos.count();
+    if (fCount == 0) return; // Nothing to delete, so don't continue.
+
+    QString promptText; // Text to be displayed on prompt dialog.
+
+    if(fCount == 1) { // Single file - display its name
+        QFileInfo info = fInfos.first();
+
+        promptText = "Do you want to permanently remove " +
+                      info.completeBaseName();
+
+        // Also append suffix, if any.
+        QString suffix = info.completeSuffix();
+        promptText += suffix.isEmpty() ? "?" : "." + suffix + "?";
+    }
+    else { // Multiple files - display their number
+        promptText = "Do you want to permanently remove " +
+                     QString::number(fCount) + " items?";
+    }
+
+    // Ask user about deletion.
+    QMessageBox::StandardButton choice;
+    choice = QMessageBox::question(this, "Confirm Deletion", promptText,
+                                   QMessageBox::No | QMessageBox::Yes);
 
     // Simply return if user selects No.
     if(choice == QMessageBox::No) return;
 
-    if(cFile.isDir()) {
-        threadsafeFileRemove(cFile.absoluteFilePath());
+    int fails = 0;
+
+    // Actually delete 'em all!
+    foreach(QFileInfo info, fInfos) {
+        if (!threadsafeFileRemove(info.absoluteFilePath())) fails++;
     }
-    else if(cFile.isFile()){
-        threadsafeFileRemove(mainExplorerModel->filePath(cIndex));
+
+    // On fails display a message on statusBar.
+    if(fails) {
+        ui->statusBar->showMessage(QString::number(fails) + " files failed to be deleted.");
     }
 }
 
