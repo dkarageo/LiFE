@@ -1,21 +1,23 @@
 #ifndef FILEDETAIL_H
 #define FILEDETAIL_H
 
-// ====Forward declarations go here====
 class QFile;
 class QLabel;
 class QLineEdit;
 class DirSizeCounter;
 
-// ====Includes go here====
 #include <QDialog>
-
 
 namespace Ui {
 class FileDetail;
 }
 
-
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * File detail provides a properties dialog for files.
+ *
+ * It consists the main properties window for LiFE project.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
 class FileDetail : public QDialog
 {
     Q_OBJECT

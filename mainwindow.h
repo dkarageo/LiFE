@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-// ====Forward declarations go here====
 class AboutDialog;
 
 #include <QMainWindow>
@@ -13,10 +12,33 @@ namespace Ui {
 class MainWindow;
 }
 
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * MainWIndow is the base window for LiFE project.
+ *
+ * It maingly consists of:
+ *
+ * -mainExplorer(view) & mainExplorerModel(model)
+ * -sideBar(view) & mainExplorerModel(model)
+ *  These two should be kept synchronized, and while one is updated
+ *  the other should be updated too.
+ *
+ * -Actions and their handlers:
+ *  Actions created in the code, should be referenced under
+ *  private members Actions section for later usage.
+ *
+ *  Adding an action means:
+ *      -Create a reference under private members.
+ *      -Creating action with its icon.
+ *      -Adding that action to menubar, toolbar, contextMenu.
+ *
+ * -Other UI Elements:
+ *  Every UI Element that may be later called again, should have
+ *  a reference under private mebers UI Elements section. *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -105,7 +127,6 @@ private:
     bool notoall_;
     bool existsDialogOpen_;
     bool errorsAlreadyHandled_;
-
 
 private slots:
     // Used to handle errors occured during file pasting.

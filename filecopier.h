@@ -1,16 +1,13 @@
 #ifndef FILECOPIER_H
 #define FILECOPIER_H
 
-// ==== Forward declarations go here ====
 class CopyDialog;
 
-// ==== Includes go here ====
 #include <QObject>
 #include <QThread>
 #include <QMetaType>
 
-/*
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * FileCopier provides an async interface to copy files and folders by
  * optionally previewing the copy status on a gui dialog.
  *
