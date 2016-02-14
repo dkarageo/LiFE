@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mainExplorer->verticalHeader()->hide();
     mainExplorer->setEditTriggers(QAbstractItemView::EditKeyPressed);
     mainExplorer->setContextMenuPolicy(Qt::CustomContextMenu);
+    mainExplorer->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mainExplorer->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     // Adding the two main views inside a splitter
     QSplitter *splitter = new QSplitter(this);
@@ -231,7 +233,7 @@ void MainWindow::onCopyActionTriggered()
 // Current QMimeDatabase is shitty... and compatible with nothing...
 {
     // Get current index.
-    QModelIndexList cIndexes = mainExplorer->selectionModel()->selectedIndexes();
+    QModelIndexList cIndexes = mainExplorer->selectionModel()->selectedRows();
     QList<QUrl> urlsList;
 
     foreach(QModelIndex cIndex, cIndexes) {
